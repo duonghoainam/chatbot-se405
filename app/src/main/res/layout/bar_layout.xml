@@ -7,7 +7,6 @@
     android:background="@color/teal_200"
     android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
     app:popupTheme="@style/MenuStyle"
-    app:titleTextColor="@color/black"
-    >
+    app:titleTextColor="@color/black">
 
 </androidx.appcompat.widget.Toolbar>
