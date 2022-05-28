@@ -28,13 +28,15 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> 
     private Context mContext;
     private List<Group> mGroup;
     private List<String> mImg;
+    private String currentUsername;
 
     FirebaseUser fuser;
 
-    public GroupAdapter(Context mContext, List<Group> mGroup, List<String> mImg){
+    public GroupAdapter(Context mContext, List<Group> mGroup, List<String> mImg, String currentUsername){
         this.mContext=mContext;
         this.mGroup=mGroup;
         this.mImg=mImg;
+        this.currentUsername=currentUsername;
     }
 
     @NonNull
@@ -87,7 +89,7 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> 
     @Override
     public int getItemViewType(int position) {
         fuser = FirebaseAuth.getInstance().getCurrentUser();
-        if (mGroup.get(position).getSender().equals(fuser.getDisplayName())){
+        if (mGroup.get(position).getSender().equals(currentUsername)){
             return MSG_TYPE_RIGHT;
         } else {
             return MSG_TYPE_LEFT;

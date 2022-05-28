@@ -112,17 +112,6 @@ public class GroupChatActivity extends AppCompatActivity {
     }
 
     private void DisplayMessages(DataSnapshot usersSnapshot) {
-//        Iterator iterator = snapshot.getChildren().iterator();
-//
-//        while (iterator.hasNext()){
-//            String chatMessage = (String) ((DataSnapshot)iterator.next()).getValue();
-//            String chatName = (String) ((DataSnapshot)iterator.next()).getValue();
-//
-//           // displayTextMessages.append()
-//        }
-
-//        System.out.println(snapshot);
-//
         mGroup = new ArrayList<>();
         mImg = new ArrayList<>();
         groupNameRef.addValueEventListener(new ValueEventListener() {
@@ -137,11 +126,12 @@ public class GroupChatActivity extends AppCompatActivity {
                         User user = userSnapshot.getValue(User.class);
                         if (user.getUsername().equals(group.getSender())){
                             mImg.add(user.getImageURL());
+                            break;
                         }
                     }
                 }
 
-                groupAdapter = new GroupAdapter(GroupChatActivity.this, mGroup, mImg);
+                groupAdapter = new GroupAdapter(GroupChatActivity.this, mGroup, mImg, currentUserName);
                 displayTextMessages.setAdapter(groupAdapter);
             }
 
