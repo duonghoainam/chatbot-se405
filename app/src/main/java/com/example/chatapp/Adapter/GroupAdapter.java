@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.chatapp.MesageActivity;
 import com.example.chatapp.Model.Group;
+import com.example.chatapp.Model.GroupMessage;
 import com.example.chatapp.Model.User;
 import com.example.chatapp.R;
 import com.google.firebase.auth.FirebaseAuth;
@@ -26,15 +27,15 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> 
     public static final int MSG_TYPE_RIGHT = 1;
 
     private Context mContext;
-    private List<Group> mGroup;
+    private List<GroupMessage> mGroupMessages;
     private List<String> mImg;
     private String currentUsername;
 
     FirebaseUser fuser;
 
-    public GroupAdapter(Context mContext, List<Group> mGroup, List<String> mImg, String currentUsername){
+    public GroupAdapter(Context mContext, List<GroupMessage> mGroupMessages, List<String> mImg, String currentUsername){
         this.mContext=mContext;
-        this.mGroup=mGroup;
+        this.mGroupMessages=mGroupMessages;
         this.mImg=mImg;
         this.currentUsername=currentUsername;
     }
@@ -54,11 +55,11 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> 
 
     @Override
     public void onBindViewHolder(@NonNull GroupAdapter.ViewHolder holder, int position) {
-        Group group = mGroup.get(position);
+        GroupMessage groupMessage = mGroupMessages.get(position);
         String img = mImg.get(position);
 
-        holder.show_message.setText(group.getMessage());
-        holder.show_username.setText(group.getSender());
+        holder.show_message.setText(groupMessage.getMessage());
+        holder.show_username.setText(groupMessage.getSender());
 
         if(img.equals("default")){
             holder.profile_image.setImageResource(R.mipmap.ic_launcher);
@@ -69,7 +70,7 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> 
 
     @Override
     public int getItemCount() {
-        return mGroup.size();
+        return mGroupMessages.size();
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder{
@@ -89,7 +90,7 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> 
     @Override
     public int getItemViewType(int position) {
         fuser = FirebaseAuth.getInstance().getCurrentUser();
-        if (mGroup.get(position).getSender().equals(currentUsername)){
+        if (mGroupMessages.get(position).getSender().equals(currentUsername)){
             return MSG_TYPE_RIGHT;
         } else {
             return MSG_TYPE_LEFT;

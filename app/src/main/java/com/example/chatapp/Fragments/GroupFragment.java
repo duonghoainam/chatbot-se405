@@ -14,6 +14,9 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 import com.example.chatapp.GroupChatActivity;
+import com.example.chatapp.Model.Group;
+import com.example.chatapp.Model.GroupMessage;
+import com.example.chatapp.Model.User;
 import com.example.chatapp.R;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -31,6 +34,7 @@ public class GroupFragment extends Fragment {
     private ListView listView;
     private ArrayAdapter<String> arrayAdapter;
     private ArrayList<String> list_of_groups = new ArrayList<>();
+    private ArrayList<String> list_of_idGroups = new ArrayList<>();
 
     private DatabaseReference GroupRef;
 
@@ -43,7 +47,7 @@ public class GroupFragment extends Fragment {
                              Bundle savedInstanceState) {
         groupFramentView = inflater.inflate(R.layout.fragment_group, container, false);
 
-        GroupRef = FirebaseDatabase.getInstance().getReference().child("Groups");
+        GroupRef = FirebaseDatabase.getInstance().getReference().child("Groupss");
         
         inializeFields();
         
@@ -53,8 +57,10 @@ public class GroupFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 String currentGroupName = parent.getItemAtPosition(position).toString();
+                String currentGroupId = list_of_idGroups.get(position).toString();
                 Intent groupChatIntent = new Intent(getContext(), GroupChatActivity.class);
                 groupChatIntent.putExtra("groupName", currentGroupName);
+                groupChatIntent.putExtra("groupId", currentGroupId);
                 startActivity(groupChatIntent);
             }
         });
@@ -73,13 +79,18 @@ public class GroupFragment extends Fragment {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 Set<String> set = new HashSet<>();
+                Set<String> set_id = new HashSet<>();
 
-                Iterator iterator = snapshot.getChildren().iterator();
-                while (iterator.hasNext()){
-                    set.add(((DataSnapshot)iterator.next()).getKey());
+                for (DataSnapshot dataSnapshot : snapshot.getChildren()){
+                    set.add(dataSnapshot.child("name").getValue().toString());
+                    set_id.add(dataSnapshot.getKey().toString());
                 }
                 list_of_groups.clear();
                 list_of_groups.addAll(set);
+
+                list_of_idGroups.clear();
+                list_of_idGroups.addAll(set_id);
+
                 arrayAdapter.notifyDataSetChanged();
             }
 

@@ -1,39 +1,53 @@
 package com.example.chatapp.Model;
 
-public class Group {
-    private String message;
-    private String sender;
-    private boolean isseen;
+import com.bumptech.glide.load.resource.bitmap.GranularRoundedCorners;
 
-    public Group(String message, String sender, boolean isseen) {
-        this.message = message;
-        this.sender = sender;
-        this.isseen = isseen;
+import java.util.List;
+
+public class Group {
+    private String admin;
+    private String name;
+    private List<GroupMessage> groupMessages;
+    private List<String> users;
+
+    public List<GroupMessage> getGroupMessages() {
+        return groupMessages;
+    }
+
+    public void setGroupMessages(List<GroupMessage> groupMessages) {
+        this.groupMessages = groupMessages;
+    }
+
+    public List<String> getUsers() {
+        return users;
+    }
+
+    public void setUsers(List<String> users) {
+        this.users = users;
+    }
+
+    public String getAdmin() {
+        return admin;
+    }
+
+    public void setAdmin(String admin) {
+        this.admin = admin;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Group(String admin, String name, List<GroupMessage> groupMessages, List<String> users) {
+        this.admin = admin;
+        this.name = name;
+        this.groupMessages = groupMessages;
+        this.users = users;
     }
 
     public Group(){}
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
-    public String getSender() {
-        return sender;
-    }
-
-    public void setSender(String sender) {
-        this.sender = sender;
-    }
-
-    public boolean isIsseen() {
-        return isseen;
-    }
-
-    public void setIsseen(boolean isseen) {
-        this.isseen = isseen;
-    }
 }

@@ -28,6 +28,8 @@ import com.example.chatapp.Fragments.GroupFragment;
 import com.example.chatapp.Fragments.ProfileFragment;
 import com.example.chatapp.Fragments.UsersFragment;
 import com.example.chatapp.Model.Chat;
+import com.example.chatapp.Model.Group;
+import com.example.chatapp.Model.GroupMessage;
 import com.example.chatapp.Model.User;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -179,14 +181,26 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private void createNewGroup(String groupName) {
-        groupRef.child("Groups").child(groupName).setValue("").addOnCompleteListener(new OnCompleteListener<Void>() {
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
-                if (task.isSuccessful()){
-                    Toast.makeText(HomeActivity.this, groupName+ " group is created!", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
+//        groupRef.child("Groups").child(groupName).setValue("").addOnCompleteListener(new OnCompleteListener<Void>() {
+//            @Override
+//            public void onComplete(@NonNull Task<Void> task) {
+//                if (task.isSuccessful()){
+//                    Toast.makeText(HomeActivity.this, groupName+ " group is created!", Toast.LENGTH_SHORT).show();
+//                }
+//            }
+//        });
+
+        HashMap<String,Object> hashMap = new HashMap<>();
+        hashMap.put("name", groupName);
+        hashMap.put("admin", username.getText().toString());
+
+        String pushkey = groupRef.child("Groupss").push().getKey();
+        groupRef.child("Groupss").child(pushkey).setValue(hashMap);
+
+        groupRef.child("Groupss").child(pushkey).child("users").child(firebaseUser.getUid()).child("id").setValue(firebaseUser.getUid());
+
+        GroupMessage groupMessage = new GroupMessage(username.getText().toString() + " creadted grroup!", username.getText().toString());
+        groupRef.child("Groupss").child(pushkey).child("groupMessages").push().setValue(groupMessage);
     }
 
     class ViewPagerAdapter extends FragmentPagerAdapter{
