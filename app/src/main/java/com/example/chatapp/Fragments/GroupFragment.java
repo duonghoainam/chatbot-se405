@@ -18,6 +18,7 @@ import com.example.chatapp.Model.Group;
 import com.example.chatapp.Model.GroupMessage;
 import com.example.chatapp.Model.User;
 import com.example.chatapp.R;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -27,6 +28,7 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 public class GroupFragment extends Fragment {
@@ -35,8 +37,11 @@ public class GroupFragment extends Fragment {
     private ArrayAdapter<String> arrayAdapter;
     private ArrayList<String> list_of_groups = new ArrayList<>();
     private ArrayList<String> list_of_idGroups = new ArrayList<>();
+    private ArrayList<String> list_of_adminGroups = new ArrayList<>();
 
+    private FirebaseAuth mAuth;
     private DatabaseReference GroupRef;
+    private String currentUserID;
 
     public GroupFragment() {
         // Required empty public constructor
@@ -48,7 +53,10 @@ public class GroupFragment extends Fragment {
         groupFramentView = inflater.inflate(R.layout.fragment_group, container, false);
 
         GroupRef = FirebaseDatabase.getInstance().getReference().child("Groupss");
-        
+
+        mAuth = FirebaseAuth.getInstance();
+        currentUserID = mAuth.getCurrentUser().getUid();
+
         inializeFields();
         
         RetrieveAndDisplayGroups();
@@ -58,9 +66,12 @@ public class GroupFragment extends Fragment {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 String currentGroupName = parent.getItemAtPosition(position).toString();
                 String currentGroupId = list_of_idGroups.get(position).toString();
+                String currentGroupAdmin = list_of_adminGroups.get(position).toString();
+
                 Intent groupChatIntent = new Intent(getContext(), GroupChatActivity.class);
                 groupChatIntent.putExtra("groupName", currentGroupName);
                 groupChatIntent.putExtra("groupId", currentGroupId);
+                groupChatIntent.putExtra("groupAdmin", currentGroupAdmin);
                 startActivity(groupChatIntent);
             }
         });
@@ -78,18 +89,25 @@ public class GroupFragment extends Fragment {
         GroupRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                Set<String> set = new HashSet<>();
-                Set<String> set_id = new HashSet<>();
+                List<String> set = new ArrayList<>();
+                List<String> set_id = new ArrayList<>();
+                List<String> set_addmin = new ArrayList<>();
 
                 for (DataSnapshot dataSnapshot : snapshot.getChildren()){
-                    set.add(dataSnapshot.child("name").getValue().toString());
-                    set_id.add(dataSnapshot.getKey().toString());
+                    if (dataSnapshot.child("users").child(currentUserID).exists()){
+                        set.add(dataSnapshot.child("name").getValue().toString());
+                        set_id.add(dataSnapshot.getKey().toString());
+                        set_addmin.add(dataSnapshot.child("admin").getValue().toString());
+                    }
                 }
                 list_of_groups.clear();
                 list_of_groups.addAll(set);
 
                 list_of_idGroups.clear();
                 list_of_idGroups.addAll(set_id);
+
+                list_of_adminGroups.clear();
+                list_of_adminGroups.addAll(set_addmin);
 
                 arrayAdapter.notifyDataSetChanged();
             }

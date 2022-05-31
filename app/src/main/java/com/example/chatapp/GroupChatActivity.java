@@ -2,17 +2,21 @@ package com.example.chatapp;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SyncStatusObserver;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.text.TextUtils;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
@@ -45,18 +49,24 @@ import java.util.List;
 
 public class GroupChatActivity extends AppCompatActivity {
     private TextView groupName;
-    private ImageButton btn_send;
+    private ImageButton btn_send, btn_addmember;
     private EditText text_send;
     private RecyclerView displayTextMessages;
+    private ArrayAdapter<String> arrayAdapter;
     private DatabaseReference userRef, groupIdRef, groupMessageKeyRef;
+
+    private ArrayList<String> list_of_members = new ArrayList<>();
+    private ArrayList<String> list_of_members_id = new ArrayList<>();
+    private ArrayList<String> list_of_members_choosed = new ArrayList<>();
+
 
     GroupAdapter groupAdapter;
     List<GroupMessage> mGroupMessages;
     List<String> mImgs;
-    List<Chatlist> mUsers;
+    List<String> mUsers;
 
     private FirebaseAuth mAuth;
-    private String currentGroupName, currentGroupId, currentUserID, currentUserName;
+    private String currentGroupName, currentGroupId, currentGroupAdmin, currentUserID, currentUserName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,6 +75,8 @@ public class GroupChatActivity extends AppCompatActivity {
 
         currentGroupName = getIntent().getExtras().get("groupName").toString();
         currentGroupId = getIntent().getExtras().get("groupId").toString();
+        currentGroupAdmin = getIntent().getExtras().get("groupAdmin").toString();
+
         groupIdRef = FirebaseDatabase.getInstance().getReference().child("Groupss").child(currentGroupId);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -81,6 +93,8 @@ public class GroupChatActivity extends AppCompatActivity {
         displayTextMessages.setLayoutManager(linearLayoutManager);
 
         btn_send = findViewById(R.id.btn_send);
+        btn_addmember = findViewById(R.id.add_member);
+
         text_send = findViewById(R.id.text_send);
 
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
@@ -96,6 +110,13 @@ public class GroupChatActivity extends AppCompatActivity {
 
         getUserInfo();
 
+        btn_addmember.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openFormAddMember();
+            }
+        });
+
         btn_send.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -107,7 +128,10 @@ public class GroupChatActivity extends AppCompatActivity {
         userRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (currentGroupAdmin.equals(currentUserName)) btn_addmember.setVisibility(View.VISIBLE);
+
                 DisplayMessages(snapshot);
+                LoadUserToAdd(snapshot);
             }
 
             @Override
@@ -117,9 +141,78 @@ public class GroupChatActivity extends AppCompatActivity {
         });
     }
 
+    private void LoadUserToAdd(DataSnapshot usersSnapshot) {
+        groupIdRef.child("users").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                list_of_members.clear();
+                for (DataSnapshot dataSnapshot : snapshot.getChildren()){
+                    Chatlist userChatlist = dataSnapshot.getValue(Chatlist.class);
+                    for (DataSnapshot userSnapshot : usersSnapshot.getChildren()){
+                        User user = userSnapshot.getValue(User.class);
+                        if (!user.getId().equals(userChatlist.getId())){
+                            list_of_members.add(user.getUsername());
+                            list_of_members_id.add(user.getId());
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+    }
+
+    private void openFormAddMember() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(GroupChatActivity.this, R.style.AlertDialog);
+        builder.setTitle("Choose members name: ");
+
+        final ListView ListViewMembers = new ListView(GroupChatActivity.this);
+
+        arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, list_of_members);
+        ListViewMembers.setAdapter(arrayAdapter);
+        ListViewMembers.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                ListViewMembers.getChildAt(position).setEnabled(false);
+                list_of_members_choosed.add(list_of_members_id.get(position));
+            }
+        });
+
+        builder.setView(ListViewMembers);
+
+        builder.setPositiveButton("Add", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (list_of_members_choosed.size()==0){
+                    Toast.makeText(GroupChatActivity.this, "Please choose member", Toast.LENGTH_SHORT).show();
+                } else {
+                    AddToGroup(list_of_members_choosed);
+                }
+            }
+        });
+
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        builder.show();
+
+    }
+
+    private void AddToGroup(ArrayList<String> list_of_members_choosed) {
+        for (int i=0; i<list_of_members_choosed.size(); i++){
+            groupIdRef.child("users").child(list_of_members_choosed.get(i)).child("id").setValue(list_of_members_choosed.get(i));
+        }
+    }
+
     private void DisplayMessages(DataSnapshot usersSnapshot) {
         mGroupMessages = new ArrayList<>();
-        mUsers = new ArrayList<>();
         mImgs = new ArrayList<>();
 
         groupIdRef.child("groupMessages").addValueEventListener(new ValueEventListener() {
