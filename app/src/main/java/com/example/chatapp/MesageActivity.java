@@ -92,6 +92,9 @@ public class MesageActivity extends AppCompatActivity {
                 String msg = text_send.getText().toString();
                 if (!msg.equals("")){
                     sendMessage(fuser.getUid(), userid, msg);
+                    if (userid=="lE0ShS4kQgRfmVi0FWW44Sl9M4O2"){
+                        botchatReply(userid, fuser.getUid(), msg);
+                    }
                 } else {
                     Toast.makeText(MesageActivity.this, "You can't send empty message", Toast.LENGTH_SHORT).show();
                 }
@@ -124,6 +127,10 @@ public class MesageActivity extends AppCompatActivity {
 
         seenMessage(userid);
 
+    }
+
+    private void botchatReply(String userid, String uid, String msg) {
+        
     }
 
     private void seenMessage(String userid){

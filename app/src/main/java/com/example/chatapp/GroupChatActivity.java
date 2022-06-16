@@ -146,14 +146,20 @@ public class GroupChatActivity extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 list_of_members.clear();
-                for (DataSnapshot dataSnapshot : snapshot.getChildren()){
-                    Chatlist userChatlist = dataSnapshot.getValue(Chatlist.class);
-                    for (DataSnapshot userSnapshot : usersSnapshot.getChildren()){
-                        User user = userSnapshot.getValue(User.class);
-                        if (!user.getId().equals(userChatlist.getId())){
-                            list_of_members.add(user.getUsername());
-                            list_of_members_id.add(user.getId());
+                for (DataSnapshot userSnapshot : usersSnapshot.getChildren()){
+                    User user = userSnapshot.getValue(User.class);
+                    boolean check = true;
+                    for (DataSnapshot dataSnapshot : snapshot.getChildren()){
+
+                        Chatlist userChatlist = dataSnapshot.getValue(Chatlist.class);
+                        if (user.getId().equals(userChatlist.getId())){
+                            check=false;
+                            break;
                         }
+                    }
+                    if (check){
+                        list_of_members.add(user.getUsername());
+                        list_of_members_id.add(user.getId());
                     }
                 }
             }
