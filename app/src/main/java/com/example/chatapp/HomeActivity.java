@@ -2,6 +2,7 @@ package com.example.chatapp;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -64,6 +65,8 @@ public class HomeActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setTitle("");
+        toolbar.inflateMenu(R.menu.menu);
+
 
         profile_image = findViewById(R.id.profile_image);
         username = findViewById(R.id.username);
@@ -78,7 +81,7 @@ public class HomeActivity extends AppCompatActivity {
                 User user = snapshot.getValue(User.class);
                 username.setText(user.getUsername());
                 if (user.getImageURL().equals("default")){
-                    profile_image.setImageResource(R.mipmap.ic_launcher);
+                    profile_image.setImageResource(R.mipmap.ic_launcher_foreground);
                 } else {
                     Glide.with(getApplicationContext()).load(user.getImageURL()).into(profile_image);
                 }
@@ -181,15 +184,6 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private void createNewGroup(String groupName) {
-//        groupRef.child("Groups").child(groupName).setValue("").addOnCompleteListener(new OnCompleteListener<Void>() {
-//            @Override
-//            public void onComplete(@NonNull Task<Void> task) {
-//                if (task.isSuccessful()){
-//                    Toast.makeText(HomeActivity.this, groupName+ " group is created!", Toast.LENGTH_SHORT).show();
-//                }
-//            }
-//        });
-
         HashMap<String,Object> hashMap = new HashMap<>();
         hashMap.put("name", groupName);
         hashMap.put("admin", username.getText().toString());
@@ -199,7 +193,7 @@ public class HomeActivity extends AppCompatActivity {
 
         groupRef.child("Groupss").child(pushkey).child("users").child(firebaseUser.getUid()).child("id").setValue(firebaseUser.getUid());
 
-        GroupMessage groupMessage = new GroupMessage(username.getText().toString() + " creadted grroup!", username.getText().toString());
+        GroupMessage groupMessage = new GroupMessage(username.getText().toString() + " created group!", username.getText().toString());
         groupRef.child("Groupss").child(pushkey).child("groupMessages").push().setValue(groupMessage);
     }
 

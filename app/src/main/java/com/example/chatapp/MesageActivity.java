@@ -11,12 +11,13 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.chatapp.Adapter.MessageAdapter;
+import com.example.chatapp.Api.ApiService;
+import com.example.chatapp.Model.BotReply;
 import com.example.chatapp.Model.Chat;
 import com.example.chatapp.Model.User;
 import com.google.firebase.auth.FirebaseAuth;
@@ -32,6 +33,9 @@ import java.util.HashMap;
 import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class MesageActivity extends AppCompatActivity {
 
@@ -92,7 +96,7 @@ public class MesageActivity extends AppCompatActivity {
                 String msg = text_send.getText().toString();
                 if (!msg.equals("")){
                     sendMessage(fuser.getUid(), userid, msg);
-                    if (userid=="lE0ShS4kQgRfmVi0FWW44Sl9M4O2"){
+                    if (userid.equals("lE0ShS4kQgRfmVi0FWW44Sl9M4O2")){
                         botchatReply(userid, fuser.getUid(), msg);
                     }
                 } else {
@@ -111,7 +115,7 @@ public class MesageActivity extends AppCompatActivity {
                 User user = snapshot.getValue(User.class);
                 username.setText(user.getUsername());
                 if (user.getImageURL().equals("default")){
-                    profile_image.setImageResource(R.mipmap.ic_launcher);
+                    profile_image.setImageResource(R.mipmap.ic_launcher_foreground);
                 } else {
                     Glide.with(getApplicationContext()).load(user.getImageURL()).into(profile_image);
                 }
@@ -129,8 +133,27 @@ public class MesageActivity extends AppCompatActivity {
 
     }
 
-    private void botchatReply(String userid, String uid, String msg) {
-        
+    private void botchatReply(String botid, String uid, String msg) {
+        BotReply messToBot = new BotReply(msg);
+
+        ApiService.apiService.sendPosts(messToBot).enqueue(new Callback<BotReply>() {
+            @Override
+            public void onResponse(Call<BotReply> call, Response<BotReply> response) {
+                DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
+
+                HashMap<String,Object> hashMap = new HashMap<>();
+                hashMap.put("sender", botid);
+                hashMap.put("receiver", uid);
+                hashMap.put("message", response.body().getMessage().toString());
+                hashMap.put("isseen", true);
+
+                reference.child("Chats").push().setValue(hashMap);
+            }
+
+            @Override
+            public void onFailure(Call<BotReply> call, Throwable t) {
+            }
+        });
     }
 
     private void seenMessage(String userid){

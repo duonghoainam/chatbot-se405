@@ -2,23 +2,28 @@ package com.example.chatapp.Fragments;
 
 import android.app.ProgressDialog;
 import android.content.ContentResolver;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.MimeTypeMap;
+import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.example.chatapp.HomeActivity;
 import com.example.chatapp.Model.User;
 import com.example.chatapp.R;
 import com.google.android.gms.tasks.Continuation;
@@ -74,7 +79,7 @@ public class ProfileFragment extends Fragment {
                 User user  = snapshot.getValue(User.class);
                 username.setText(user.getUsername());
                 if (user.getImageURL().equals("default")){
-                    image_profile.setImageResource(R.mipmap.ic_launcher);
+                    image_profile.setImageResource(R.mipmap.ic_launcher_foreground);
                 } else {
                     Glide.with(getContext()).load(user.getImageURL()).into(image_profile);
                 }
@@ -93,7 +98,48 @@ public class ProfileFragment extends Fragment {
             }
         });
 
+        username.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                requestNewName();
+            }
+        });
+
         return view;
+    }
+
+    private void requestNewName() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext(), R.style.AlertDialog);
+        builder.setTitle("Enter new name: ");
+
+        final EditText groupNameField = new EditText(getContext());
+        groupNameField.setHint("Enter new name hear!");
+        builder.setView(groupNameField);
+
+        builder.setPositiveButton("Change", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                final String groupName = groupNameField.getText().toString();
+
+                if (TextUtils.isEmpty(groupName)){
+                    Toast.makeText(getContext(), "Please enter group name", Toast.LENGTH_SHORT).show();
+                } else {
+                    reference = FirebaseDatabase.getInstance().getReference("Users").child(fuser.getUid());
+                    HashMap<String, Object> map = new HashMap<>();
+                    map.put("username", groupName);
+                    reference.updateChildren(map);
+                }
+            }
+        });
+
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        builder.show();
     }
 
     private void openImage(){

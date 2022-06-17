@@ -62,7 +62,7 @@ public class GroupAdapter extends RecyclerView.Adapter<GroupAdapter.ViewHolder> 
         holder.show_username.setText(groupMessage.getSender());
 
         if(img.equals("default")){
-            holder.profile_image.setImageResource(R.mipmap.ic_launcher);
+            holder.profile_image.setImageResource(R.mipmap.ic_launcher_foreground);
         } else {
             Glide.with(mContext).load(img).into(holder.profile_image);
         }
